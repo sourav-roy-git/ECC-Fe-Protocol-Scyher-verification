@@ -1,0 +1,148 @@
+hashfunction fH;
+usertype ConstVal;
+usertype SharedSecret;
+
+const pufx:Function;
+const pufy:Function;
+const gen:Function;
+const rep:Function;
+const fECM:Function;
+const fECA:Function;
+const concat:Function;
+const enc:Function;
+const dec:Function;
+
+const idx:ConstVal;
+const idy:ConstVal;
+const ts:ConstVal;
+const del:ConstVal;
+const Cxi:ConstVal;
+const Rxi:ConstVal;
+const Cxi1:ConstVal;
+const lambdax:ConstVal;
+const helpxi:ConstVal;
+const Cyi:ConstVal;
+const Ryi:ConstVal;
+const Cyi1:ConstVal;
+const lambday:ConstVal;
+const helpyi:ConstVal;
+
+
+//step1: server
+	macro Kxi=gen(Rxi);
+	macro xtemp1=fH(Cxi,Kxi,ts);
+	macro xtemp2=fECM(del,Kxi);
+	macro Mx1 = fECA(xtemp1,xtemp2);
+
+//step2: deviceX
+	macro Rxi=pufx(Cxi);
+	macro Kxi=rep(Rxi,helpxi);
+	macro xtemp1=fH(Cxi,Kxi,ts);
+	macro xtemp2=fECM(del,Kxi);
+	macro Mx1prime=fECA(xtemp1,xtemp2);
+
+//step3: deviceX
+	macro Xpub=fECM(lambdax,del);
+	macro Rxi1=pufx(Cxi1);
+	macro CRPx=concat(Cxi1,Rxi1);
+	macro Mx2=enc(CRPx,Kxi);
+	macro Hxs=fH(CRPx,Xpub,idy,ts);
+
+//step4: server
+	macro CRPx=dec(Mx2,Kxi);
+	macro Hxsprime=fH(CRPx,Xpub,idy,ts);
+
+//step5: server
+	macro Kyi=gen(Ryi);
+	macro ytemp1=fH(Cyi,Kyi,ts);
+	macro ytemp2=fECM(del,Kyi);
+	macro My1 = fECA(ytemp1,ytemp2);
+
+//step6: deviceY
+	macro Ryi=pufy(Cyi);
+	macro Kyi=rep(Ryi,helpyi);
+	macro ytemp1=fH(Cyi,Kyi,ts);
+	macro ytemp2=fECM(del,Kyi);
+	macro My1prime = fECA(ytemp1,ytemp2);
+
+//step7: deviceY
+	macro Ypub=fECM(lambday,del);
+	macro Ryi1=pufy(Cyi1);
+	macro CRPy=concat(Cyi1,Ryi1);
+	macro My2=enc(CRPy,Kyi);
+	macro Hys=fH(CRPy,Ypub,ts);
+
+//step8: server
+	macro CRPy=dec(My2,Kyi);
+	macro Hysprime=fH(CRPy,Ypub,ts);
+
+//step9: server
+	macro Hsx=fH(Ypub,Kxi,ts);
+	macro Hsy=fH(Xpub,Kyi,idx,ts);
+
+//step10: deviceX
+	macro Hsxprime=fH(Ypub,Kxi,ts);
+
+//step11: deviceY
+	macro Hsyprime=fH(Xpub,Kyi,idx,ts);
+
+
+
+protocol EccFe(deviceX,Server,deviceY){
+	role deviceX{
+		send_mx1(deviceX,Server,idx);
+		recv_ms1(Server,deviceX, Cxi,ts,helpxi,Mx1);
+		match(Mx1,Mx1prime);
+		send_mx2(deviceX,Server,Xpub,Mx2,Hxs,idy);
+		recv_ms3(Server,deviceX,Ypub,Hsx);
+		match(Hsx,Hsxprime);
+		
+		claim_x1(deviceX, Secret, Rxi);
+		claim_x2(deviceX, Secret, Kxi);
+		claim_x3(deviceX, Secret, Rxi1);
+		claim_x4(deviceX, Secret, lambdax);
+		claim_x5(deviceX, Niagree);
+		claim_x6(deviceX, Nisynch);
+		claim_x7(deviceX, Alive);
+		claim_x8(deviceX, Weakagree);
+	}
+	role Server{
+				
+		recv_mx1(deviceX,Server,idx);
+		send_ms1(Server,deviceX,Cxi,ts,helpxi,Mx1);
+		recv_mx2(deviceX,Server,Xpub,Mx2,Hxs,idy);
+		match(Hxs,Hxsprime);
+		send_ms2(Server,deviceY,Cyi,ts,helpyi,My1);
+		recv_my2(deviceY,Server,Ypub,My2,Hys);
+		match(Hys,Hysprime);
+		send_ms3(Server,deviceX,Ypub,Hsx);
+		send_ms4(Server,deviceY,Xpub,Hsy,idx);
+		
+		claim_s1(Server, Secret, Rxi);
+		claim_s2(Server, Secret, Kxi);
+		claim_s3(Server, Secret, CRPx);
+		claim_s4(Server, Secret, Ryi);
+		claim_s5(Server, Secret, Kyi);
+		claim_s6(Server, Secret, CRPy);
+		claim_s7(Server, Niagree);
+		claim_s8(Server, Nisynch);
+		claim_s9(Server, Alive);
+		claim_s10(Server, Weakagree);
+	}
+	role deviceY{
+		recv_ms2(Server,deviceY,Cyi,ts,helpyi,My1);
+		match(My1,My1prime);
+		send_my2(deviceY,Server,Ypub,My2,Hys);
+		recv_ms4(Server,deviceY,Xpub,Hsy,idx);
+		match(Hsy,Hsyprime);
+		
+		claim_y1(deviceY, Secret, Ryi);
+		claim_y2(deviceY, Secret, Kyi);
+		claim_y3(deviceY, Secret, Ryi1);
+		claim_y4(deviceY, Secret, lambday);
+		claim_y5(deviceY, Niagree);
+		claim_y6(deviceY, Nisynch);
+		claim_y7(deviceY, Alive);
+		claim_y8(deviceY, Weakagree);
+	}
+}
