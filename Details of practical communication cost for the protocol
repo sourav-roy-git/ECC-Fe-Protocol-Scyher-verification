@@ -1,0 +1,16 @@
+
+TABLE IV: Communication Cost
+-----------------------------
+Let assume:
+c: device id / PUF challenge / time stamp length (Cxi / ω) = 64bit
+e: encrypted message length (Mx / My) = 128bit
+m: length of helper data (γxi / γyi) = 64bit
+h: length of a cryptographic hash (∆sx1 / ∆sx2 / ∆sy1/∆sy2)= 128bit
+l: length of public key (Xpub key / Ypub key) = 128bit
+
+Server auth. by IoTx = (Cxi + γxi + ω + ∆sx1)       =  (2 ∗ c + m + h) =  2*64+64+128     = 320bit
+IoTx auth. by Server = (Xpub key + Mx + ∆xs1 + idy) =  (l + e + h + c) =  128+128+128+64  = 448bit
+Server auth. by IoTy = (Cyi + γyi + ω + ∆sy1)       =  (2 ∗ c + m + h) =  2*64+64+128     = 320bit
+IoTy auth. by Server = (Ypub key + My + ∆ys1)       =  (l + e + h)     =  128+128+128     = 384bit
+IoTx auth. by IoTy   = (Ypub key + ∆sx2)            =  (l + h)         =  128+128         = 256bit
+IoTy auth. by IoTx   = (Xpub key + ∆sy2 + idx)      =  (l + h + c)     =  128+128+64      = 320bit
