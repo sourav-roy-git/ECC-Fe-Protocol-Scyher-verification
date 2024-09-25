@@ -14,3 +14,5 @@ Server auth. by IoTy = (Cyi + γyi + ω + ∆sy1)       =  (2 ∗ c + m + h) =  
 IoTy auth. by Server = (Ypub key + My + ∆ys1)       =  (l + e + h)     =  128+128+128     = 384bit
 IoTx auth. by IoTy   = (Ypub key + ∆sx2)            =  (l + h)         =  128+128         = 256bit
 IoTy auth. by IoTx   = (Xpub key + ∆sy2 + idx)      =  (l + h + c)     =  128+128+64      = 320bit
+
+
